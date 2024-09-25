@@ -13,5 +13,7 @@ if __name__ == '__main__':
     ]
     query = sql_helper.build_complex_query("*", table_name="stock_basic", conditions=conditions)
     df = sql_helper.read_common_df_by_sql(query)
+
+    ts_manager.get_daily_trade_by_tscode()
     print(df)
 
