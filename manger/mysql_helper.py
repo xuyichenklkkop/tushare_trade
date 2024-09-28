@@ -28,3 +28,7 @@ def read_common_df_by_sql(sql):
 def write_stock_name_data(df):
     res = df.to_sql('stock_basic', engine_ts, index=False, if_exists='append', chunksize=5000)
     print(res)
+
+
+def write_company_business(df):
+    res = df.to_sql('stock_company', engine_ts, index=False, if_exists='append', chunksize=5000)
