@@ -32,3 +32,15 @@ def write_stock_name_data(df):
 
 def write_company_business(df):
     res = df.to_sql('stock_company', engine_ts, index=False, if_exists='append', chunksize=5000)
+
+
+def write_one_company_income(df):
+    res = df.to_sql('stock_income',engine_ts,index=False,if_exists='append',chunksize=5000)
+
+
+def write_one_company_balance(df):
+    res = df.to_sql('stock_balance',engine_ts,index=False,if_exists='append',chunksize=5000)
+
+
+def write_one_company_cashflow(df):
+    res = df.to_sql('stock_cashflow',engine_ts,index=False,if_exists='append',chunksize=5000)
