@@ -519,7 +519,7 @@ def get_daily_trade(pro):
     query_company = sql_helper.build_complex_query("ts_code", table_name="stock_basic", conditions=[])
     company_df = sql_helper.read_common_df_by_sql(query_company)
     for tscode in company_df['ts_code']:
-        daily_todo_df = get_single_daily_trade(pro, tscode)
+        daily_todo_df = get_single_daily_trade_time_range(pro, tscode,"20240930","20241012")
         condition = [Condition('ts_code', '=', tscode)]
         query_daily = sql_helper.build_complex_query("ts_code,trade_date", table_name="stock_daily_trade",
                                                      conditions=condition)
@@ -555,6 +555,38 @@ def get_single_daily_trade(pro, code):
         "trade_date": "",
         "start_date": "",
         "end_date": "",
+        "offset": "",
+        "limit": ""
+    }, fields=[
+        "ts_code",
+        "trade_date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "pre_close",
+        "change",
+        "pct_chg",
+        "vol",
+        "amount"
+    ])
+    return df
+
+
+def get_single_daily_trade_time_range(pro, code,start,end):
+    """
+    获取每日交易的数据
+    :param pro:
+    :param code:
+    :param start:
+    :param end:
+    :return:
+    """
+    df = pro.daily(**{
+        "ts_code": code,
+        "trade_date": "",
+        "start_date": start,
+        "end_date": end,
         "offset": "",
         "limit": ""
     }, fields=[
