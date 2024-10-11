@@ -1,8 +1,10 @@
+import pandas as pd
 import tushare as ts
 import manger.mysql_helper as sql_helper
 import logging
 from manger.Condition import Condition
 import time
+from datetime import datetime
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -108,6 +110,7 @@ def get_income(pro):
             print(tscode + '_income')
             income_df = get_single_income(pro, tscode)
             sql_helper.write_one_company_income(income_df)
+            time.sleep(0.5)
 
 
 def get_single_income(pro, code):
@@ -512,10 +515,85 @@ def get_single_cashflow(pro, code):
     return df
 
 
-def get_daily_trade_by_tscode(*args: object) -> object:
+def get_daily_trade(pro):
+    query_company = sql_helper.build_complex_query("ts_code", table_name="stock_basic", conditions=[])
+    company_df = sql_helper.read_common_df_by_sql(query_company)
+    for tscode in company_df['ts_code']:
+        daily_todo_df = get_single_daily_trade(pro, tscode)
+        condition = [Condition('ts_code', '=', tscode)]
+        query_daily = sql_helper.build_complex_query("ts_code,trade_date", table_name="stock_daily_trade",
+                                                     conditions=condition)
+        daily_already = sql_helper.read_common_df_by_sql(query_daily)
+        to_write_array = []
+        for index, row in daily_todo_df.iterrows():
+            ts_code = row['ts_code']
+            date = row['trade_date']
+            code_date_df_already = daily_already.query(f'ts_code == "{ts_code}" & trade_date == "{date}"')
+            if code_date_df_already.empty:
+                to_write_array.append(row)
+        logging.info(f'foreach complete:{tscode} => new add:{str(len(to_write_array))}')
+        if len(to_write_array) > 0:
+            to_in_df = pd.DataFrame(to_write_array)
+            sql_helper.write_company_daily_trade(to_in_df)
+       # for tcode,date in daily_already.values:
+
+       # if daily_already.empty:
+       #     print(tscode + "_daily")
+       #     df = get_single_daily_trade(pro, tscode)
+       #     sql_helper.write_company_daily_trade(df)
+
+
+def get_single_daily_trade(pro, code):
     """
     获取每日交易的数据
-    :param args:
+    :param pro:
+    :param code:
     :return:
     """
-    pass
+    df = pro.daily(**{
+        "ts_code": code,
+        "trade_date": "",
+        "start_date": "",
+        "end_date": "",
+        "offset": "",
+        "limit": ""
+    }, fields=[
+        "ts_code",
+        "trade_date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "pre_close",
+        "change",
+        "pct_chg",
+        "vol",
+        "amount"
+    ])
+    return df
+
+
+
+
+def get_trade_day(pro, exchange="SSE"):
+    """
+    :param pro:
+    :param exchange: 默认不填是SSE， 交易所 SSE上交所,SZSE深交所,CFFEX 中金所,SHFE 上期所,CZCE 郑商所,DCE 大商所,INE 上能源
+    :return:
+    """
+    df = pro.trade_cal(**{
+        "exchange": exchange,
+        "cal_date": "",
+        "start_date": "",
+        "end_date": "",
+        "is_open": "",
+        "limit": "",
+        "offset": ""
+    }, fields=[
+        "exchange",
+        "cal_date",
+        "is_open",
+        "pretrade_date"
+    ])
+    return df
+

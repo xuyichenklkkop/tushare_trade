@@ -1,7 +1,6 @@
 import pandas as pd
 from sqlalchemy import create_engine
 
-
 engine_ts = create_engine('mysql://root:jtt0304xu@localhost:3306/tushare_stock?charset=utf8mb4&use_unicode=1')
 
 
@@ -35,12 +34,20 @@ def write_company_business(df):
 
 
 def write_one_company_income(df):
-    res = df.to_sql('stock_income',engine_ts,index=False,if_exists='append',chunksize=5000)
+    res = df.to_sql('stock_income', engine_ts, index=False, if_exists='append', chunksize=5000)
 
 
 def write_one_company_balance(df):
-    res = df.to_sql('stock_balance',engine_ts,index=False,if_exists='append',chunksize=5000)
+    res = df.to_sql('stock_balance', engine_ts, index=False, if_exists='append', chunksize=5000)
 
 
 def write_one_company_cashflow(df):
-    res = df.to_sql('stock_cashflow',engine_ts,index=False,if_exists='append',chunksize=5000)
+    res = df.to_sql('stock_cashflow', engine_ts, index=False, if_exists='append', chunksize=5000)
+
+
+def write_company_daily_trade(df):
+    res = df.to_sql('stock_daily_trade', engine_ts, index=False, if_exists='append', chunksize=5000)
+
+
+def write_trade_day(df):
+    res = df.to_sql('trade_day', engine_ts, index=False, if_exists='replace', chunksize=5000)
