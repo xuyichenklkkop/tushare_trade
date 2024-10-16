@@ -24,5 +24,12 @@ if __name__ == '__main__':
     # t1.start()
     # t2.start()
 
-    ts_manager.get_daily_trade(pro)
+    #交易日历
+    #ts_manager.get_trade_day(pro)
+
+    # 复权因子
+    ts_manager.get_adj_factor_all(pro)
+
+    #每日行情
+    #ts_manager.get_daily_trade(pro)
     print("daily finished")

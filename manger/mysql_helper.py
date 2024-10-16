@@ -51,3 +51,7 @@ def write_company_daily_trade(df):
 
 def write_trade_day(df):
     res = df.to_sql('trade_day', engine_ts, index=False, if_exists='replace', chunksize=5000)
+
+
+def write_adj_factor(df):
+    res = df.to_sql('adj_factor', engine_ts, index=False, if_exists='replace', chunksize=5000)

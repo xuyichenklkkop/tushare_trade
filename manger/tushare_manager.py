@@ -4,7 +4,7 @@ import manger.mysql_helper as sql_helper
 import logging
 from manger.Condition import Condition
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -519,7 +519,7 @@ def get_daily_trade(pro):
     query_company = sql_helper.build_complex_query("ts_code", table_name="stock_basic", conditions=[])
     company_df = sql_helper.read_common_df_by_sql(query_company)
     for tscode in company_df['ts_code']:
-        daily_todo_df = get_single_daily_trade_time_range(pro, tscode,"20240930","20241012")
+        daily_todo_df = get_single_daily_trade_time_range(pro, tscode, "20240930", "20241016")
         condition = [Condition('ts_code', '=', tscode)]
         query_daily = sql_helper.build_complex_query("ts_code,trade_date", table_name="stock_daily_trade",
                                                      conditions=condition)
@@ -535,12 +535,12 @@ def get_daily_trade(pro):
         if len(to_write_array) > 0:
             to_in_df = pd.DataFrame(to_write_array)
             sql_helper.write_company_daily_trade(to_in_df)
-       # for tcode,date in daily_already.values:
 
-       # if daily_already.empty:
-       #     print(tscode + "_daily")
-       #     df = get_single_daily_trade(pro, tscode)
-       #     sql_helper.write_company_daily_trade(df)
+    # for tcode,date in daily_already.values:
+    # if daily_already.empty:
+    #     print(tscode + "_daily")
+    #     df = get_single_daily_trade(pro, tscode)
+    #     sql_helper.write_company_daily_trade(df)
 
 
 def get_single_daily_trade(pro, code):
@@ -573,7 +573,7 @@ def get_single_daily_trade(pro, code):
     return df
 
 
-def get_single_daily_trade_time_range(pro, code,start,end):
+def get_single_daily_trade_time_range(pro, code, start, end):
     """
     获取每日交易的数据
     :param pro:
@@ -605,8 +605,6 @@ def get_single_daily_trade_time_range(pro, code,start,end):
     return df
 
 
-
-
 def get_trade_day(pro, exchange="SSE"):
     """
     :param pro:
@@ -627,5 +625,30 @@ def get_trade_day(pro, exchange="SSE"):
         "is_open",
         "pretrade_date"
     ])
-    return df
+    sql_helper.write_trade_day(df)
 
+
+def get_adj_factor_all(pro):
+    query_company = sql_helper.build_complex_query("cal_date", table_name="trade_day", conditions=[])
+    day_df = sql_helper.read_common_df_by_sql(query_company)
+    for day in day_df['cal_date']:
+        factor_api_df = get_adj_factor(pro, day)
+        print(day)
+        if not factor_api_df.empty:
+            sql_helper.write_adj_factor(factor_api_df)
+
+
+def get_adj_factor(pro,day):
+    df = pro.adj_factor(**{
+        "ts_code": "",
+        "trade_date": day,
+        "start_date": "",
+        "end_date": "",
+        "limit": "",
+        "offset": ""
+    }, fields=[
+        "ts_code",
+        "trade_date",
+        "adj_factor"
+    ])
+    return df
